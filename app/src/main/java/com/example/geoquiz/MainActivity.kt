@@ -2,11 +2,15 @@ package com.example.geoquiz
 
 import android.app.Activity
 import android.graphics.Color
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.geoquiz.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
@@ -35,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Got a QuizViewModel: $quizViewModel")
 
         updateQuestion()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            blurCheatButton()
+        }
     }
 
     override fun onStart() {
@@ -79,7 +86,14 @@ class MainActivity : AppCompatActivity() {
         quizViewModel.moveToPrev()
         updateQuestion()
     }
+    fun cheatClick(view: View) {
+        val intent = CheatActivity.newIntent(this@MainActivity, quizViewModel.currentQuestionAnswer)
+        cheatLauncher.launch(intent)
+    }
 
+    fun textViewClick(view: View) {
+        nextBtnClick(view)
+    }
     private fun updateQuestion() {
         val textResId = quizViewModel.currentQuestionText
         binding.questionTextVew.setText(textResId)
@@ -97,14 +111,15 @@ class MainActivity : AppCompatActivity() {
             .setBackgroundTint(Color.BLUE)
             .show()
     }
-
-    fun cheatClick(view: View) {
-        val intent = CheatActivity.newIntent(this@MainActivity, quizViewModel.currentQuestionAnswer)
-        cheatLauncher.launch(intent)
+    @RequiresApi(Build.VERSION_CODES.S)
+    private fun blurCheatButton() {
+        val effect = RenderEffect.createBlurEffect(
+            10.0f,
+            10.0f,
+            Shader.TileMode.CLAMP
+        )
+        binding.cheatButton.setRenderEffect(effect)
     }
 
-    fun textViewClick(view: View) {
-        nextBtnClick(view)
-    }
 
 }
